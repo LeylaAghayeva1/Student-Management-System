@@ -25,6 +25,7 @@ class Course:
         self._credits = credits
         self._prerequisites = prerequisites
         self._max_capacity = max_capacity
+        self._course_info = (crn, name, credits)
 
     #Getters and setters for the Course class, we need them to access and modify the attributes of the Course class because they are private and we want to encapsulate the data.
     
@@ -76,20 +77,26 @@ class Course:
         """
         
         return self._max_capacity
-
-    def set_crn(self, crn: int) -> None:
+    
+    def get_course_info(self) -> tuple:
         """
-        Updates the course CRN.
+        Returns immutable course information.
+        The tuple contains:
+        - Course CRN
+        - Course name
+        - Course credits
         """
-        
-        self._crn = crn
+        return self._course_info
 
     def set_name(self, name: str) -> None:
         """
         Updates the course name.
+        Also refreshes the course information tuple
+        to keep stored data synchronized.
         """
         
         self._name = name
+        self._course_info=(self._crn, name, self._credits)
 
     def set_teacher_id(self, teacher_id: int) -> None:
         """
@@ -101,9 +108,12 @@ class Course:
     def set_credits(self, credits: int) -> None:
         """
         Updates course credits.
+        Also refreshes the course information tuple
+        to keep stored data synchronized.
         """
         
         self._credits = credits
+        self._course_info=(self._crn, self._name, credits)
 
     def set_prerequisites(self, prerequisites: set) -> None:
         """
@@ -120,22 +130,34 @@ class Course:
         self._max_capacity = max_capacity
 
 
-    def add_student(self, student_id: int) -> None:
+    def add_student(self, student_id: int) -> bool:
         """
-        Adds a student to the course if capacity allows
-        and the student is not already enrolled.
+        Adds a student to the course.
+        The student is added only if:
+        - The course has available capacity.
+        - The student is not already enrolled.
+        Returns:
+        True if the student was successfully added.
+        False if the course is full or the student is already enrolled.
         """
 
         if (len(self._student_ids) < self._max_capacity and student_id not in self._student_ids):
             self._student_ids.append(student_id)
+            return True
+        return False
 
-    def remove_student(self, student_id: int) -> None:
+    def remove_student(self, student_id: int) -> bool:
         """
         Removes a student from the course.
+        Returns:
+        True if the student was removed.
+        False if the student was not enrolled.
         """
 
         if student_id in self._student_ids:
             self._student_ids.remove(student_id)
+            return True
+        return False
 
     def add_prerequisite(self, course_crn: int) -> None:
         """

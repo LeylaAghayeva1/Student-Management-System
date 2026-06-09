@@ -3,40 +3,31 @@ class Student(Person):
     """
     Represents a student in the student management system.
     Extends the Person class and stores student-specific information
-    such as student number, enrolled courses and year of study.
+    such as enrolled courses and year of study.
     """
 
-    _student_number: str
     _enrolled_courses: list
     _year_of_study: int
 
     # used the parent constructor to initialize the common attributes of the Person class
     # and then initialized the specific attributes of the Student class.
-    
-    def __init__(self, id: int, name: str, surname: str, email: str, student_number: str, year_of_study: int):
+
+    def __init__(self, id: int, name: str, surname: str, email: str, year_of_study: int):
         """
         Initializes student information using the parent Person constructor.
         """
         
-        #used parent class constructor inside the child class constructor
+        # used parent class constructor inside the child class constructor
         super().__init__(id, name, surname, email)
-        self._student_number = student_number
         self._enrolled_courses = []
         self._year_of_study = year_of_study
 
         # tuple to uniquely identify the student
-        self._identity = (id, student_number)
+        self._identity = (id, name, surname)
 
     # getters and setters for the Student class, we need them to access and modify
     # the attributes of the Student class because they are private and we want
     # to encapsulate the data.
-
-    def get_student_number(self) -> str:
-        """
-        Returns student's unique number.
-        """
-        
-        return self._student_number
 
     def get_enrolled_courses(self) -> list:
         """
@@ -49,42 +40,39 @@ class Student(Person):
         """
         Returns student's year of study.
         """
-        
+
         return self._year_of_study
 
     def get_identity(self) -> tuple:
         """
         Returns immutable student identity tuple.
         """
-        
+
         return self._identity
-    
-    def set_student_number(self, student_number: str) -> None:
-        """
-        Updates student's number.
-        """
-        
-        self._student_number = student_number
 
     def set_year_of_study(self, year_of_study: int) -> None:
         """
         Updates student's year of study.
         """
-        
+
         self._year_of_study = year_of_study
 
-    def enroll_course(self, course_id: int) -> None:
+    def enroll_course(self, course_id: int) -> bool:
         """
         Adds a course ID to student's enrolled courses.
+        Prevents duplicate enrollment.
         """
-        
-        self._enrolled_courses.append(course_id)
+
+        if course_id not in self._enrolled_courses:
+            self._enrolled_courses.append(course_id)
+            return True
+        return False
 
     def drop_course(self, course_id: int) -> None:
         """
         Removes a course ID from student's enrolled courses.
         """
-
+        
         if course_id in self._enrolled_courses:
             self._enrolled_courses.remove(course_id)
 
@@ -98,18 +86,14 @@ class Student(Person):
         Returns the role of the object.
         Overrides Person.get_role() and demonstrates polymorphism.
         """
-        
         return "Student"
 
     def __str__(self) -> str:
         """
         Returns student information as a string.
         """
-
         return (
             super().__str__()
-            + " - Student Number: "
-            + self._student_number
             + " - Year of Study: "
             + str(self._year_of_study)
         )

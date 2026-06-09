@@ -12,16 +12,19 @@ class Grade:
         student_id: int,
         course_crn: str,
         score: float,
-        semester: str
+        semester: str, 
+        max_score=100
     ):
         """
         Initializes grade information.
         """
+        self._max_score=max_score
         self._student_id = student_id
         self._course_crn = course_crn
         self._score = score
         self._semester = semester
         self._letter_grade = ""
+        self._record_key=(student_id, course_crn, semester)
         self.calculate_letter()
 
 
@@ -40,19 +43,29 @@ class Grade:
     def get_semester(self) -> str:
         """Returns semester."""
         return self._semester
+    def get_record_key(self) -> tuple:
+        """
+        Returns the id of the student, 
+        the crn of the class that student took, 
+        and the semester
+        """
+        return self._record_key
     def set_score(self, score: float) -> None:
         """
         Updates score and recalculates letter grade.
         """
-        self._score = score
-        self.calculate_letter()
+        if score < 0 or score > self._max_score:
+            raise ValueError(f"Score must be between 0 and {self._max_score}.")
+        else:
+            self._score = score
+            self.calculate_letter()
         
     def calculate_letter(self) -> None:
         """
         Converts numeric score into letter grade.
         """
-        if self._score < 0 :
-            raise ValueError("Score cannot be negative.")
+        if self._score < 0 or self._score>self._max_score:
+            raise ValueError(f"Score must be between 0 and {self._max_score}.")
         if self._score >= 93.5:
             self._letter_grade = "A"
         elif self._score >= 89.5:

@@ -75,13 +75,6 @@ class Person(ABC):
         
         self._email = email
 
-    def set_id(self, id: int) -> None:
-        """
-        Updates person's ID.
-        """
-        
-        self._id = id
-
     @abstractmethod
     def get_role(self) -> str:
         """
