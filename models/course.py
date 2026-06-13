@@ -1,8 +1,9 @@
 class Course:
     """
     Represents a course in the student management system.
-    Stores course information such as CRN, name, teacher,
-    enrolled students, prerequisites, capacity, and credits.
+    Stores course-related information including course CRN,
+    name, assigned teacher, enrolled students, prerequisites,
+    maximum capacity, and credit value.
     """
 
     _crn: int
@@ -186,3 +187,44 @@ class Course:
         Returns a string representation of course information.
         """
         return "Course CRN: " + str(self._crn) + " - Name: " + self._name + " - Teacher ID: " + str(self._teacher_id) + " - Credits: " + str(self._credits) + " - Enrolled Students: " + str(len(self._student_ids)) + "/" + str(self._max_capacity) + " - Prerequisites: " + str(self._prerequisites)
+    
+    def to_dict(self) -> dict:
+        """
+        Converts the Course object into a dictionary.
+        The dictionary contains all course attributes including
+        teacher information, enrolled students, prerequisites,
+        capacity, and credits.
+        Returns:
+            dict: Dictionary representation of the course.
+        """
+        return {
+            "crn": self._crn,
+            "name": self._name,
+            "teacher_id": self._teacher_id,
+            "student_ids": self._student_ids,
+            "prerequisites": list(self._prerequisites),
+            "max_capacity": self._max_capacity,
+            "credits": self._credits,
+        }
+        
+    @staticmethod
+    def from_dict(data: dict):
+        """
+        Creates a Course object from dictionary data.
+        Used when loading course information from storage.
+        Args:
+            data (dict): Dictionary containing course information.
+        Returns:
+            Course: Reconstructed Course object.
+        """
+        course = Course(
+            data["crn"],
+            data["name"],
+            data["teacher_id"],
+            set(data["prerequisites"]),
+            data["max_capacity"],
+            data["credits"]
+        )
+        for student_id in data["student_ids"]:
+            course.add_student(student_id)
+        return course

@@ -1,6 +1,8 @@
 class Grade:
     """
-    Represents a student's grade for a course.
+    Represents a student's grade record for a specific course.
+    Stores student ID, course CRN, numeric score, calculated
+    letter grade, semester information, and a unique record key.
     """
     _student_id: int
     _course_crn: str
@@ -16,7 +18,16 @@ class Grade:
         max_score=100
     ):
         """
-        Initializes grade information.
+        Initializes a Grade object.
+        Creates a grade record and automatically calculates the
+        corresponding letter grade from the numeric score.
+        Args:
+        student_id (int): ID of the student.
+        course_crn (str): CRN of the course.
+        score (float): Student's numeric score.
+        semester (str): Semester in which the course was taken.
+        max_score (int, optional): Maximum possible score.
+        Defaults to 100.
         """
         self._max_score=max_score
         self._student_id = student_id
@@ -123,3 +134,39 @@ class Grade:
             + " - Letter Grade: " + self._letter_grade
             + " - Semester: " + self._semester
         )
+        
+    def to_dict(self) -> dict:
+        """
+        Converts the Grade object into a dictionary.
+        The dictionary contains all grade-related information including
+        student ID, course CRN, score, letter grade, semester, and record key.
+        Returns:
+            dict: Dictionary representation of the grade.
+        """
+        return {
+            "student_id": self._student_id,
+            "course_crn": self._course_crn,
+            "score": self._score,
+            "letter_grade": self._letter_grade,
+            "semester": self._semester,
+            "max_score": self._max_score,
+        }
+        
+    @staticmethod
+    def from_dict(data: dict):
+        """
+        Creates a Grade object from dictionary data.
+        Used when loading grade information from storage.
+        Args:
+            data (dict): Dictionary containing grade information.
+        Returns:
+            Grade: Reconstructed Grade object.
+        """
+        grade = Grade(
+            data["student_id"],
+            data["course_crn"],
+            data["score"],
+            data["semester"],
+            data["max_score"]
+        )
+        return grade

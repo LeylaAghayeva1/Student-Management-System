@@ -95,3 +95,48 @@ class Teacher(Person):
             + " - Department: "
             + self._department
         )
+        
+    def to_dict(self) -> dict:
+        """
+        Converts the Teacher object into a dictionary.
+
+        Includes inherited Person attributes and teacher-specific
+        attributes.
+
+        Returns:
+            dict: Dictionary representation of the teacher.
+        """
+
+        return {
+            "id": self._id,
+            "name": self._name,
+            "surname": self._surname,
+            "email": self._email,
+            "department": self._department,
+            "teaching_courses": self._teaching_courses,
+            "identity": self._identity
+        }
+        
+    @staticmethod
+    def from_dict(data: dict):
+        """
+        Creates a Teacher object from dictionary data.
+
+        Used when loading teacher information from storage.
+
+        Args:
+            data (dict): Dictionary containing teacher information.
+
+        Returns:
+            Teacher: Reconstructed Teacher object.
+        """
+        teacher = Teacher(
+            data["id"],
+            data["name"],
+            data["surname"],
+            data["email"],
+            data["department"]
+        )
+        for course_id in data["teaching_courses"]:
+            teacher.assign_course(course_id)
+        return teacher

@@ -97,3 +97,46 @@ class Student(Person):
             + " - Year of Study: "
             + str(self._year_of_study)
         )
+        
+    def to_dict(self) -> dict:
+        """
+        Converts the Student object into a dictionary.
+
+        The dictionary contains all student attributes including
+        inherited Person attributes and Student-specific attributes.
+
+        Returns:
+            dict: Dictionary representation of the student.
+        """
+
+        return {
+            "id": self._id,
+            "name": self._name,
+            "surname": self._surname,
+            "email": self._email,
+            "enrolled_courses": self._enrolled_courses,
+            "year_of_study": self._year_of_study,
+        }
+       
+    @staticmethod 
+    def from_dict(data: dict):
+        """
+        Creates a Student object from dictionary data.
+        Used for deserialization when loading student information
+        from files or external sources.
+        Args:
+            data (dict): Dictionary containing student information.
+        Returns:
+            Student: A reconstructed Student object.
+        """
+        student = Student(
+            data["id"],
+            data["name"],
+            data["surname"],
+            data["email"],
+            data["year_of_study"]
+        )
+        for course_id in data["enrolled_courses"]:
+            student.enroll_course(course_id)
+
+        return student

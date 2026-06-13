@@ -90,3 +90,18 @@ class Person(ABC):
         """
 
         return self._name + " " + self._surname + " (" + self._email + ")"
+    
+    @abstractmethod
+    def to_dict(self):
+        """
+        Converts to the dictionary
+        """
+        pass
+    
+    @staticmethod
+    @abstractmethod
+    def from_dict(data: dict):
+        """
+        Converts from dictionary 
+        """
+        pass
