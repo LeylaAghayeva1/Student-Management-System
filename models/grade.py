@@ -61,6 +61,11 @@ class Grade:
         and the semester
         """
         return self._record_key
+    def get_max_score(self):
+        """
+        Returns max score
+        """
+        return self._max_score
     def set_score(self, score: float) -> None:
         """
         Updates score and recalculates letter grade.
