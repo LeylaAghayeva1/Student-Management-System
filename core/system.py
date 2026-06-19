@@ -362,3 +362,10 @@ class StudentManagementSystem:
         )
 
         return sorted_students[:n]
+    
+    def get_available_roles(self) -> list:
+        """Returns all available roles dynamically."""
+        return list(set(
+            user.get_role()
+            for user in self.get_all_students() + self.get_all_teachers()
+        ))

@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from core.system import StudentManagementSystem
 from gui.screens.login import LoginFrame
+from gui.screens.dashboard import DashboardFrame
 from data.storage import Storage
 class StudentManagementApp(tk.Tk):
     """
@@ -16,239 +17,94 @@ class StudentManagementApp(tk.Tk):
     GUI layer does not contain business logic.
     """
     def __init__(self):
-        """
-        Initializes application window and system data.
-        """
+        """Initializes application window and system data."""
         super().__init__()
-        self.title(
-            "Student Management System"
-        )
-        self.geometry(
-            "1000x700"
-        )
-        self.resizable(
-            True,
-            True
-        )
-        # Backend system
-        self.system = StudentManagementSystem()
-        # Current logged user
+        self.title("Student Management System")
+        self.geometry("1000x700")
+        self.resizable(True, True)
+        self._system = StudentManagementSystem()
         self.current_user = None
-        # Current GUI frame
         self.current_frame = None
-        # Storage MUST be initialized before login
-        self.storage = Storage(
-            "students.db"
-        )
+        self.storage = Storage("students.db")
         self.storage.connect()
         self.storage.create_tables()
-        self.storage.load_all(
-            self.system
-        )
-        # Role -> interface mapping
+        self.storage.load_all(self._system)
         self._role_loaders = {
-            "Student":
-                self.load_student_interface,
-            "Teacher":
-                self.load_teacher_interface,
-            "Admin":
-                self.load_admin_interface
+            "Student": self.load_student_interface,
+            "Teacher": self.load_teacher_interface,
         }
-        # Save before closing
-        self.protocol(
-            "WM_DELETE_WINDOW",
-            self.on_close
-        )
-        # Show login after data is loaded
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.show_login()
 
     def on_close(self):
-        """
-        Saves system data and closes application.
-        Complexity:
-        O(n)
-        """
-        self.storage.save_all(
-            self.system
-        )
+        """Saves system data and closes application."""
+        self.storage.save_all(self._system)
         self.storage.disconnect()
         self.destroy()
 
     def clear_window(self):
-        """
-        Removes current GUI frame.
-        Complexity:
-        O(1)
-        """
-        if self.current_frame:
+        """Removes current GUI frame."""
+        if self.current_frame is not None:
             self.current_frame.destroy()
+        self.current_frame = None
 
     def show_login(self):
-        """
-        Displays login screen.
-        Successful login loads
-        the correct dashboard.
-        """
+        """Displays login screen."""
         self.clear_window()
-        self.current_frame = LoginFrame(
-            self,
-            self.handle_login
-        )
-        self.current_frame.pack(
-            fill="both",
-            expand=True
-        )
+        self.current_frame = LoginFrame(self, self.handle_login, self._system)
+        self.current_frame.pack(fill="both", expand=True)
 
     def handle_login(self, user):
-        """
-        Handles successful login.
-        Uses role mapping to select
-        correct interface.
-        Args:
-            user:
-                Logged-in user object.
-        Complexity:
-        O(1)
-        """
+        """Handles successful login using role mapping."""
         self.current_user = user
-        role = user.get_role()
-        loader = self._role_loaders.get(
-            role
-        )
+        loader = self._role_loaders.get(user.get_role())
         if loader:
             loader()
         else:
-            messagebox.showerror(
-                "Error",
-                "Unknown user role"
-            )
+            messagebox.showerror("Error", "Unknown user role")
 
     def create_tabs(self):
-        """
-        Creates tab container.
-        Returns:
-            ttk.Notebook object.
-        Complexity:
-        O(1)
-        """
-        notebook = ttk.Notebook(
-            self.current_frame
-        )
-        notebook.pack(
-            fill="both",
-            expand=True
-        )
+        """Creates and returns tab container."""
+        notebook = ttk.Notebook(self.current_frame)
+        notebook.pack(fill="both", expand=True)
         return notebook
 
     def load_student_interface(self):
         """
-        Loads student dashboard.
-        Tabs:
-        - Profile
-        - Courses
-        - Grades
+        Loads student interface.
+        Tabs: Dashboard, Courses, Grades
         """
         self.clear_window()
-        self.current_frame = ttk.Frame(
-            self
-        )
-        self.current_frame.pack(
-            fill="both",
-            expand=True
-        )
+        self.current_frame = ttk.Frame(self)
+        self.current_frame.pack(fill="both", expand=True)
         tabs = self.create_tabs()
-        profile = ttk.Frame(tabs)
+        # Dashboard tab — wired to DashboardFrame
+        dashboard = DashboardFrame(tabs, self._system, self.current_user)
+        tabs.add(dashboard, text="Dashboard")
         courses = ttk.Frame(tabs)
+        tabs.add(courses, text="Courses")
         grades = ttk.Frame(tabs)
-        tabs.add(
-            profile,
-            text="Profile"
-        )
-        tabs.add(
-            courses,
-            text="Courses"
-        )
-        tabs.add(
-            grades,
-            text="Grades"
-        )
+        tabs.add(grades, text="Grades")
 
     def load_teacher_interface(self):
         """
-        Loads teacher dashboard.
-        Tabs:
-        - Profile
-        - Courses
-        - Students
+        Loads teacher interface.
+        Tabs: Dashboard, Students, Courses
         """
         self.clear_window()
-        self.current_frame = ttk.Frame(
-            self
-        )
-        self.current_frame.pack(
-            fill="both",
-            expand=True
-        )
+        self.current_frame = ttk.Frame(self)
+        self.current_frame.pack(fill="both", expand=True)
         tabs = self.create_tabs()
-        profile = ttk.Frame(tabs)
-        courses = ttk.Frame(tabs)
+        # Dashboard tab — wired to DashboardFrame
+        dashboard = DashboardFrame(tabs, self._system, self.current_user)
+        tabs.add(dashboard, text="Dashboard")
         students = ttk.Frame(tabs)
-        tabs.add(
-            profile,
-            text="Profile"
-        )
-        tabs.add(
-            courses,
-            text="Courses"
-        )
-        tabs.add(
-            students,
-            text="Students"
-        )
-
-    def load_admin_interface(self):
-        """
-        Loads administrator dashboard.
-        Admin manages:
-        - Students
-        - Teachers
-        - Courses
-        - Grades
-        """
-        self.clear_window()
-        self.current_frame = ttk.Frame(
-            self
-        )
-        self.current_frame.pack(
-            fill="both",
-            expand=True
-        )
-        tabs = self.create_tabs()
-        students = ttk.Frame(tabs)
-        teachers = ttk.Frame(tabs)
+        tabs.add(students, text="Students")
         courses = ttk.Frame(tabs)
-        grades = ttk.Frame(tabs)
-        tabs.add(
-            students,
-            text="Students"
-        )
-        tabs.add(
-            teachers,
-            text="Teachers"
-        )
-        tabs.add(
-            courses,
-            text="Courses"
-        )
-        tabs.add(
-            grades,
-            text="Grades"
-        )
+        tabs.add(courses, text="Courses")
 
 def main():
-    """
-    Starts the application.
-    """
+    """Starts the application."""
     app = StudentManagementApp()
     app.mainloop()
 
