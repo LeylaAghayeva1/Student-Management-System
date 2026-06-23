@@ -8,6 +8,8 @@ from gui.screens.students import StudentsFrame
 from gui.screens.courses import CoursesFrame
 from gui.screens.analytics import AnalyticsFrame
 from analysis.analytics import Analytics
+from models.student import Student
+from models.teacher import Teacher
 class StudentManagementApp(tk.Tk):
     """
     Main application window.
@@ -33,6 +35,10 @@ class StudentManagementApp(tk.Tk):
         self.storage.connect()
         self.storage.create_tables()
         self.storage.load_all(self._system)
+        if not self._system.get_all_students() and not self._system.get_all_teachers():
+            self._system.add_student(Student(1, "Demo", "Student", "demo@student.com", 1))
+            self._system.add_teacher(Teacher(1, "Demo", "Teacher", "demo@teacher.com", "CS"))
+            self.storage.save_all(self._system)
         self._role_loaders = {
             "Student": self.load_student_interface,
             "Teacher": self.load_teacher_interface,
