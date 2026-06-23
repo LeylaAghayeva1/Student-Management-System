@@ -312,7 +312,7 @@ class Storage:
             grades.append(
                 Grade(
                     row[0],  # student_id
-                    row[1],  # course_crn
+                    int(row[1]),  # course_crn <- cast to int to match Course keys
                     row[2],  # score
                     row[4],  # semester
                     row[5]   # max_score

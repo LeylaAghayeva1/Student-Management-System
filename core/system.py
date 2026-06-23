@@ -369,3 +369,13 @@ class StudentManagementSystem:
             user.get_role()
             for user in self.get_all_students() + self.get_all_teachers()
         ))
+        
+    def get_all_grades(self) -> list:
+        """
+        Returns all grades in the system.
+        Complexity: O(n)
+        """
+        all_grades = []
+        for grades in self._grades_by_student.values():
+            all_grades.extend(grades)
+        return all_grades
