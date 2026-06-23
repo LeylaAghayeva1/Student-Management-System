@@ -11,10 +11,10 @@ class CoursesFrame(tk.Frame):
     - Add courses
     - Edit courses
     - Delete courses
-    - View course grades
+    - View grades
     - Add grades
-    GUI handles only input/display.
-    Business logic remains in StudentManagementSystem.
+    GUI handles only display/input.
+    Business logic stays inside StudentManagementSystem.
     """
     def __init__(self, parent, system):
         """
@@ -23,20 +23,22 @@ class CoursesFrame(tk.Frame):
             parent:
                 Parent tkinter widget.
             system:
-                StudentManagementSystem instance.
+                StudentManagementSystem object.
         Complexity:
             O(n)
         """
         super().__init__(parent)
         self._system = system
-        # Stores real Course objects.
-        # Avoids depending on displayed values.
+        # Treeview row -> Course object
+        # avoids losing teacher_id
         self._course_map = {}
         self.create_course_table()
         self.create_buttons()
         self.create_grade_section()
         self.load_courses()
-        
+    # ==========================
+    # COURSE TABLE
+    # ==========================
     def create_course_table(self):
         """
         Creates course Treeview.
@@ -75,43 +77,9 @@ class CoursesFrame(tk.Frame):
             expand=True,
             pady=10
         )
-        
-    def create_buttons(self):
-        """
-        Creates CRUD buttons.
-        Complexity:
-            O(1)
-        """
-        frame = ttk.Frame(self)
-        frame.pack(pady=10)
-        ttk.Button(
-            frame,
-            text="Add",
-            command=self.add_course
-        ).pack(
-            side="left",
-            padx=5
-        )
-        ttk.Button(
-            frame,
-            text="Edit",
-            command=self.edit_course
-        ).pack(
-            side="left",
-            padx=5
-        )
-        ttk.Button(
-            frame,
-            text="Delete",
-            command=self.delete_course
-        ).pack(
-            side="left",
-            padx=5
-        )
-
     def load_courses(self):
         """
-        Loads courses into table.
+        Loads all courses.
         Complexity:
             O(n)
         """
@@ -140,21 +108,49 @@ class CoursesFrame(tk.Frame):
                 )
             )
             self._course_map[row] = course
-
+    # ==========================
+    # BUTTONS
+    # ==========================
+    def create_buttons(self):
+        """
+        Creates course CRUD buttons.
+        Complexity:
+            O(1)
+        """
+        frame = ttk.Frame(self)
+        frame.pack(
+            pady=10
+        )
+        ttk.Button(
+            frame,
+            text="Add",
+            command=self.add_course
+        ).pack(
+            side="left",
+            padx=5
+        )
+        ttk.Button(
+            frame,
+            text="Edit",
+            command=self.edit_course
+        ).pack(
+            side="left",
+            padx=5
+        )
+        ttk.Button(
+            frame,
+            text="Delete",
+            command=self.delete_course
+        ).pack(
+            side="left",
+            padx=5
+        )
+    # ==========================
+    # COURSE CRUD
+    # ==========================
     def add_course(self):
-        """
-        Opens add course popup.
-        Complexity:
-            O(1)
-        """
         self.course_form()
-
     def edit_course(self):
-        """
-        Opens edit course popup.
-        Complexity:
-            O(1)
-        """
         selected = self.course_table.selection()
         if not selected:
             messagebox.showerror(
@@ -166,13 +162,7 @@ class CoursesFrame(tk.Frame):
             selected[0]
         ]
         self.course_form(course)
-
     def delete_course(self):
-        """
-        Deletes selected course.
-        Complexity:
-            O(1)
-        """
         selected = self.course_table.selection()
         if not selected:
             messagebox.showerror(
@@ -183,37 +173,37 @@ class CoursesFrame(tk.Frame):
         course = self._course_map[
             selected[0]
         ]
-        if messagebox.askyesno(
+        confirm = messagebox.askyesno(
             "Delete",
             "Delete this course?"
-        ):
+        )
+        if confirm:
             self._system.delete_course(
                 course.get_crn()
             )
             self.load_courses()
-
     def course_form(self, course=None):
         """
-        Creates add/edit course popup.
+        Add/edit popup.
         Complexity:
             O(1)
         """
         window = tk.Toplevel(self)
-        labels = [
+        fields = [
             "Name",
             "Teacher ID",
             "Capacity",
             "Credits"
         ]
         entries = {}
-        for label in labels:
+        for field in fields:
             ttk.Label(
                 window,
-                text=label
+                text=field
             ).pack()
             entry = ttk.Entry(window)
             entry.pack()
-            entries[label] = entry
+            entries[field] = entry
         if course:
             entries["Name"].insert(
                 0,
@@ -231,7 +221,6 @@ class CoursesFrame(tk.Frame):
                 0,
                 course.get_credits()
             )
-
         def save():
             name = entries["Name"].get()
             try:
@@ -284,12 +273,15 @@ class CoursesFrame(tk.Frame):
         ).pack(
             pady=10
         )
-
-    # ================= GRADES =================
-
+    # ==========================
+    # GRADES
+    # ==========================
     def create_grade_section(self):
         """
-        Creates grade management section.
+        Creates grade section.
+        Includes:
+        - Show grades
+        - Add grade
         Complexity:
             O(1)
         """
@@ -323,15 +315,18 @@ class CoursesFrame(tk.Frame):
         ).pack(
             pady=5
         )
-
     def show_course_grades(self):
         """
-        Displays grades of selected course.
+        Displays grades for selected course.
         Complexity:
             O(n)
         """
         selected = self.course_table.selection()
         if not selected:
+            messagebox.showerror(
+                "Error",
+                "Select course first"
+            )
             return
         course = self._course_map[
             selected[0]
@@ -358,7 +353,6 @@ class CoursesFrame(tk.Frame):
                 f"{grade.get_score()} | "
                 f"{grade.get_letter_grade()}\n"
             )
-
     def add_grade_popup(self):
         """
         Opens add grade popup.
@@ -401,12 +395,23 @@ class CoursesFrame(tk.Frame):
                     "Invalid numeric input"
                 )
                 return
-            semester = entries["Semester"].get()
+            if self._system.get_student(student_id) is None:
+                messagebox.showerror(
+                    "Error",
+                    "Student does not exist"
+                )
+                return
+            if self._system.get_course(crn) is None:
+                messagebox.showerror(
+                    "Error",
+                    "Course does not exist"
+                )
+                return
             grade = Grade(
                 student_id,
                 crn,
                 score,
-                semester
+                entries["Semester"].get()
             )
             self._system.add_grade(
                 grade
