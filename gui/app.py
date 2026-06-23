@@ -4,6 +4,10 @@ from core.system import StudentManagementSystem
 from gui.screens.login import LoginFrame
 from gui.screens.dashboard import DashboardFrame
 from data.storage import Storage
+from gui.screens.students import StudentsFrame
+from gui.screens.courses import CoursesFrame
+from gui.screens.analytics import AnalyticsFrame
+from analysis.analytics import Analytics
 class StudentManagementApp(tk.Tk):
     """
     Main application window.
@@ -70,38 +74,31 @@ class StudentManagementApp(tk.Tk):
         return notebook
 
     def load_student_interface(self):
-        """
-        Loads student interface.
-        Tabs: Dashboard, Courses, Grades
-        """
+        """Loads student interface. Tabs: Dashboard, Courses"""
         self.clear_window()
         self.current_frame = ttk.Frame(self)
         self.current_frame.pack(fill="both", expand=True)
         tabs = self.create_tabs()
-        # Dashboard tab — wired to DashboardFrame
         dashboard = DashboardFrame(tabs, self._system, self.current_user)
         tabs.add(dashboard, text="Dashboard")
-        courses = ttk.Frame(tabs)
-        tabs.add(courses, text="Courses")
-        grades = ttk.Frame(tabs)
-        tabs.add(grades, text="Grades")
-
+        courses_frame = CoursesFrame(tabs, self._system)
+        tabs.add(courses_frame, text="Courses")
+        
     def load_teacher_interface(self):
-        """
-        Loads teacher interface.
-        Tabs: Dashboard, Students, Courses
-        """
+        """Loads teacher interface. Tabs: Dashboard, Students, Courses, Analytics"""
         self.clear_window()
         self.current_frame = ttk.Frame(self)
         self.current_frame.pack(fill="both", expand=True)
         tabs = self.create_tabs()
-        # Dashboard tab — wired to DashboardFrame
         dashboard = DashboardFrame(tabs, self._system, self.current_user)
         tabs.add(dashboard, text="Dashboard")
-        students = ttk.Frame(tabs)
-        tabs.add(students, text="Students")
-        courses = ttk.Frame(tabs)
-        tabs.add(courses, text="Courses")
+        students_frame = StudentsFrame(tabs, self._system)
+        tabs.add(students_frame, text="Students")
+        courses_frame = CoursesFrame(tabs, self._system)
+        tabs.add(courses_frame, text="Courses")
+        analytics = Analytics(self._system)
+        analytics_frame = AnalyticsFrame(tabs, analytics)
+        tabs.add(analytics_frame, text="Analytics")
 
 def main():
     """Starts the application."""
